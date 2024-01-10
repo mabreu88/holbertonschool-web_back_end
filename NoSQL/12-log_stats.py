@@ -1,30 +1,24 @@
 #!/usr/bin/env python3
-"""  provides some stats about
-Nginx logs stored in MongoDB """
+"""a Python script that provides some stats about
+Nginx logs stored in MongoDB"""
+
+import pymongo
 
 from pymongo import MongoClient
 
 
-def log_stats(log_dict: dict) -> int:
-    """ provides some stats about Nginx logs stored in MongoDB
-        - Database: logs
-        - Collection: nginx
-        - Methods ["GET", "POST", "PUT", "PATCH", "DELETE"]
-    """
+if __name__ == "__main__":
     client = MongoClient('mongodb://127.0.0.1:27017')
-    data = client.logs.nginx
-    logs = data.count_documents({log_dict})
-    message = f"\
-              { log_stats({logs}) } logs\n\
-              Methods:\n\
-              \tmethod GET: { log_stats({'method': 'GET'}) }\n\
-              \tmethod POST: { log_stats({'method': 'POST'}) }\n\
-              \tmethod PUT: {log_stats({'method': 'PUT'})}\n\
-              \tmethod PATCH: {log_stats({'method': 'PATCH'})}\n\
-              \tmethod DELETE: {log_stats({'method': 'DELETE'})}\n\
-              {status} status check\
-            "
-    print(message)
+    log_collection = client.logs.nginx
 
-    if __name__ == "__main__":
-        log_stats()
+    method = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+
+    print("{} logs".format(log_collection.count_documents({})))
+    print("Methods:")
+
+    for m in method:
+        print('\tmethod {}: {}'.format(
+            m, log_collection.count_documents({"method": m})))
+
+    print("{} status check".format(log_collection.count_documents(
+        {"method": "GET", "path": "/status"})))
